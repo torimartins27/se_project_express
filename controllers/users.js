@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const { NOT_FOUND, DEFAULT, BAD_REQUEST } = require("../utils/constants");
 
 const getUsers = (req, res) => {
   User.find({})
@@ -7,7 +8,7 @@ const getUsers = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      return res.status(500).send({ message: err.message });
+      return res.status(DEFAULT).send({ message: err.message });
     });
 };
 
@@ -21,10 +22,15 @@ const findUser = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      if (err.message === "User not found") {
-        return res.status(404).send({ message: "User not found" });
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Clothing item ID not found" });
       }
-      return res.status(500).send({ message: err.message });
+      if (err.message === "User not found") {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
+      return res.status(DEFAULT).send({ message: err.message });
     });
 };
 
@@ -36,7 +42,12 @@ const createUsers = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      return res.status(500).send({ message: err.message });
+      if (err.name === "ValidationError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Clothing item ID not found" });
+      }
+      return res.status(DEFAULT).send({ message: err.message });
     });
 };
 

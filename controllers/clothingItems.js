@@ -1,15 +1,19 @@
 const clothingItem = require("../models/clothingItem");
+const { BAD_REQUEST, NOT_FOUND, DEFAULT } = require("../utils/constants");
 
 const createItem = (req, res) => {
-  const { name, imageURL, weather } = req.body;
+  const { name, imageUrl, weather } = req.body;
   clothingItem
-    .create({ name, weather, imageURL, owner: req.user._id })
+    .create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       res.status(200).send({ item });
     })
     .catch((err) => {
       console.error(err);
-      return res.status(400).send({ message: err.message });
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid input data" });
+      }
+      return res.status(BAD_REQUEST).send({ message: err.message });
     });
 };
 
@@ -19,7 +23,7 @@ const getItem = (req, res) => {
     .then((items) => res.status(200).send({ items }))
     .catch((err) => {
       console.error(err);
-      return res.status(500).send({ message: err.message });
+      return res.status(DEFAULT).send({ message: err.message });
     });
 };
 
@@ -36,19 +40,26 @@ const deleteItem = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      if (err.message === "Clothing item not found") {
-        return res.status(404).send({ message: "Clothing item not found" });
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Clothing item ID not found" });
       }
-      return res.status(500).send({ message: err.message });
+      if (err.message === "Clothing item not found") {
+        return res
+          .status(NOT_FOUND)
+          .send({ message: "Clothing item not found" });
+      }
+      return res.status(DEFAULT).send({ message: err.message });
     });
 };
 
 const likeItem = (req, res) => {
   clothingItem
     .findByIdAndUpdate(
-      req.params._id,
+      req.params.itemId,
       { $addToSet: { likes: req.user._id } },
-      { new: true }
+      { new: true, runValidators: true }
     )
     .orFail(new Error("Clothing item not found"))
     .then((likedItem) => {
@@ -56,19 +67,31 @@ const likeItem = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      if (err.message === "Clothing item not found") {
-        return res.staus(404).send({ message: "Clothing item not found" });
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Clothing item ID not found" });
       }
-      return res.status(500).send({ message: err.message });
+      if (err.message === "ValidationError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Clothing item not found" });
+      }
+      if (err.message === "Clothing item not found") {
+        return res
+          .status(NOT_FOUND)
+          .send({ message: "Clothing item not found" });
+      }
+      return res.status(DEFAULT).send({ message: err.message });
     });
 };
 
 const unlikeItem = (req, res) => {
   clothingItem
     .findByIdAndUpdate(
-      req.params._id,
-      { $pull: { likes: req.params._id } },
-      { new: true }
+      req.params.itemId,
+      { $pull: { likes: req.user._id } },
+      { new: true, runValidators: true }
     )
     .orFail(new Error("Clothing item not found"))
     .then((likedItem) => {
@@ -76,10 +99,22 @@ const unlikeItem = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      if (err.message === "Clothing item not found") {
-        return res.staus(404).send({ message: "Clothing item not found" });
+      if (err.name === "CastError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Clothing item ID not found" });
       }
-      return res.status(500).send({ message: err.message });
+      if (err.message === "ValidationError") {
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "Clothing item not found" });
+      }
+      if (err.message === "Clothing item not found") {
+        return res
+          .status(NOT_FOUND)
+          .send({ message: "Clothing item not found" });
+      }
+      return res.status(DEFAULT).send({ message: err.message });
     });
 };
 

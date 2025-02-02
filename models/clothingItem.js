@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const ObjectId = mongoose.Schema.Types;
+
 const validator = require("validator");
 
 const clothingItemSchema = new mongoose.Schema({
@@ -14,7 +14,7 @@ const clothingItemSchema = new mongoose.Schema({
     required: true,
     enum: ["hot", "warm", "cold"],
   },
-  imageURL: {
+  imageUrl: {
     type: String,
     required: [true, "The avatar field is required."],
     validate: {
