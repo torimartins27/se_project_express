@@ -1,5 +1,10 @@
 const clothingItem = require("../models/clothingItem");
-const { BAD_REQUEST, NOT_FOUND, DEFAULT } = require("../utils/constants");
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  DEFAULT,
+  FORBIDDEN,
+} = require("../utils/constants");
 
 const createItem = (req, res) => {
   const { name, imageUrl, weather } = req.body;
@@ -29,10 +34,19 @@ const getItem = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
+  const userId = req.user._id;
 
   clothingItem
-    .findByIdAndDelete(itemId)
+    .findById(itemId)
     .orFail(new Error("Clothing item not found"))
+    .then((item) => {
+      if (item.owner.toString() !== userId.toString()) {
+        return res
+          .status(FORBIDDEN)
+          .send({ message: "Forbidden: You are not the owner of this item" });
+      }
+      return clothingItem.findByIdAndDelete(itemId);
+    })
     .then((deletedItem) => {
       res
         .status(200)
