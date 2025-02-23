@@ -1,5 +1,6 @@
 // clothingItemRouter.js
 const router = require("express").Router();
+const auth = require("../middlewares/auth");
 
 const {
   createItem,
@@ -10,6 +11,8 @@ const {
 } = require("../controllers/clothingItems");
 
 router.get("/", getItem);
+
+router.use(auth);
 
 router.post("/", createItem);
 

@@ -11,7 +11,7 @@ const createItem = (req, res) => {
   clothingItem
     .create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
-      res.status(200).send({ item });
+      res.send({ item });
     })
     .catch((err) => {
       console.error(err);
@@ -25,7 +25,7 @@ const createItem = (req, res) => {
 const getItem = (req, res) => {
   clothingItem
     .find({})
-    .then((items) => res.status(200).send({ items }))
+    .then((items) => res.send({ items }))
     .catch((err) => {
       console.error(err);
       return res.status(DEFAULT).send({ message: err.message });
@@ -38,6 +38,9 @@ const deleteItem = (req, res) => {
 
   clothingItem
     .findById(itemId)
+    .then((deletedItem) => {
+      res.send({ message: "Item deleted successfully", deletedItem });
+    })
     .orFail(new Error("Clothing item not found"))
     .then((item) => {
       if (item.owner.toString() !== userId.toString()) {
@@ -46,11 +49,6 @@ const deleteItem = (req, res) => {
           .send({ message: "Forbidden: You are not the owner of this item" });
       }
       return clothingItem.findByIdAndDelete(itemId);
-    })
-    .then((deletedItem) => {
-      res
-        .status(200)
-        .send({ message: "Item deleted successfully", deletedItem });
     })
     .catch((err) => {
       console.error(err);
@@ -77,7 +75,7 @@ const likeItem = (req, res) => {
     )
     .orFail(new Error("Clothing item not found"))
     .then((likedItem) => {
-      res.status(200).send({ message: "Item liked successfully", likedItem });
+      res.send({ message: "Item liked successfully", likedItem });
     })
     .catch((err) => {
       console.error(err);
@@ -109,7 +107,7 @@ const unlikeItem = (req, res) => {
     )
     .orFail(new Error("Clothing item not found"))
     .then((likedItem) => {
-      res.status(200).send({ message: "Item unliked successfully", likedItem });
+      res.send({ message: "Item unliked successfully", likedItem });
     })
     .catch((err) => {
       console.error(err);

@@ -7,17 +7,18 @@ const {
   DEFAULT,
   BAD_REQUEST,
   UNAUTHORIZED,
+  CONFLICT,
 } = require("../utils/constants");
 
 const { JWT_SECRET } = require("../utils/config");
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.params;
+  const userId = req.user._id;
 
   User.findById(userId)
     .orFail(new Error("User not found"))
     .then((foundUser) => {
-      res.status(200).send({ message: "ID found successfully", foundUser });
+      res.send({ message: "ID found successfully", foundUser });
     })
     .catch((err) => {
       console.error(err);
@@ -43,12 +44,12 @@ const createUser = (req, res) => {
     .then((user) => {
       const { password: userPassword, ...userWithoutPassword } =
         user.toObject();
-      res.status(200).send({ user: userWithoutPassword });
+      res.send({ user: userWithoutPassword });
     })
     .catch((err) => {
       console.error(err);
       if (err.code === 11000) {
-        return res.status(409).send({ message: "Email already in use" });
+        return res.status(CONFLICT).send({ message: "Email already in use" });
       }
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid user data" });
@@ -97,7 +98,7 @@ const updateProfile = (req, res) => {
       if (!updatedUser) {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
-      return res.status(200).send({ user: updatedUser });
+      return res.send({ user: updatedUser });
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
