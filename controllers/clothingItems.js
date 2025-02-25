@@ -38,9 +38,6 @@ const deleteItem = (req, res) => {
 
   clothingItem
     .findById(itemId)
-    .then((deletedItem) => {
-      res.send({ message: "Item deleted successfully", deletedItem });
-    })
     .orFail(new Error("Clothing item not found"))
     .then((item) => {
       if (item.owner.toString() !== userId.toString()) {
@@ -48,7 +45,9 @@ const deleteItem = (req, res) => {
           .status(FORBIDDEN)
           .send({ message: "Forbidden: You are not the owner of this item" });
       }
-      return clothingItem.findByIdAndDelete(itemId);
+      return clothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
+        res.send({ message: "Item deleted successfully", deletedItem });
+      });
     })
     .catch((err) => {
       console.error(err);
