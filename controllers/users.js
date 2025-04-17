@@ -84,7 +84,7 @@ const login = (req, res) => {
 
 const updateProfile = (req, res) => {
   const { name, avatar } = req.body;
-  const userId = req.user._id;
+  const userId = req.user?._id;
 
   User.findByIdAndUpdate(
     userId,
