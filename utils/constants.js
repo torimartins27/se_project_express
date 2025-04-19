@@ -5,6 +5,11 @@ const FORBIDDEN = 403;
 const UNAUTHORIZED = 401;
 const CONFLICT = 409;
 
+const BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://api.what-the-weather.jumpingcrab.com"
+    : "http://localhost:3001";
+
 module.exports = {
   BAD_REQUEST,
   NOT_FOUND,
@@ -12,4 +17,5 @@ module.exports = {
   FORBIDDEN,
   UNAUTHORIZED,
   CONFLICT,
+  BASE_URL,
 };
