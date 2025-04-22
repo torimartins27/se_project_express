@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
-const { UNAUTHORIZED } = require("../utils/constants");
+const { UnauthorizedError } = require("../utils/UnauthorizedError");
 
-module.exports = (req, res, next) => {
+const authMiddleware = (req, res, next) => {
   if (
     req.method === "POST" &&
     (req.path === "/signin" || req.path === "/signup")
@@ -10,18 +10,21 @@ module.exports = (req, res, next) => {
     return next();
   }
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(UNAUTHORIZED).send({ message: "Authorization required" });
+  const { authorization } = req.headers;
+
+  if (!authorization || !authorization.startsWith("Bearer ")) {
+    return next(new UnauthorizedError("Authorization required"));
   }
 
-  const token = authHeader.replace("Bearer ", "");
+  const token = authorization.replace("Bearer ", "");
 
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
     return next();
   } catch (err) {
-    return res.status(UNAUTHORIZED).send({ message: "Invalid token" });
+    return next(new Unauth());
   }
 };
+
+module.exports = authMiddleware;

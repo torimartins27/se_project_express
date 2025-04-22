@@ -2,13 +2,11 @@ const bcrypt = require("bcrypt");
 
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const {
-  NOT_FOUND,
-  DEFAULT,
-  BAD_REQUEST,
-  UNAUTHORIZED,
-  CONFLICT,
-} = require("../utils/constants");
+const { BadRequestError } = require("../utils/BadRequestError");
+const { NotFoundError } = require("../utils/NotFoundError");
+const { UnauthorizedError } = require("../utils/UnauthorizedError");
+const { ConflictError } = require("../utils/ConflictError");
+const { ServerError } = require("../utils/ServerError");
 
 const { JWT_SECRET } = require("../utils/config");
 
@@ -23,14 +21,9 @@ const getCurrentUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Clothing item ID not found" });
+        return next(new BadRequestError("Invalid user ID"));
       }
-      if (err.message === "User not found") {
-        return res.status(NOT_FOUND).send({ message: "User not found" });
-      }
-      return res.status(DEFAULT).send({ message: err.message });
+      return next(err);
     });
 };
 
@@ -49,12 +42,12 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.code === 11000) {
-        return res.status(CONFLICT).send({ message: "Email already in use" });
+        return next(new ConflictError("Email already in use"));
       }
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid user data" });
+        return next(new BadRequestError("Invalid user data"));
       }
-      return res.status(DEFAULT).send({ message: err.message });
+      return next(err);
     });
 };
 
@@ -62,9 +55,7 @@ const login = (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res
-      .status(BAD_REQUEST)
-      .send({ message: "Incorrect email or password provided" });
+    return next(new BadRequestError("Incorrect email or password provided"));
   }
 
   return User.findUserByCredentials(email, password)
@@ -76,9 +67,9 @@ const login = (req, res) => {
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
-        return res.status(UNAUTHORIZED).send({ message: err.message });
+        return next(new UnauthorizedError(err.message));
       }
-      return res.status(DEFAULT).send({ message: err.message });
+      return next(err);
     });
 };
 
@@ -96,15 +87,15 @@ const updateProfile = (req, res) => {
   )
     .then((updatedUser) => {
       if (!updatedUser) {
-        return res.status(NOT_FOUND).send({ message: "User not found" });
+        return next(new NotFoundError("User not found"));
       }
       return res.send({ user: updatedUser });
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+        return next(new BadRequestError("Invalid data"));
       }
-      return res.status(DEFAULT).send({ message: err.message });
+      return next(err);
     });
 };
 
