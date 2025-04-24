@@ -16,7 +16,7 @@ const createItem = (req, res, next) => {
       if (err.name === "ValidationError") {
         return next(new BadRequestError("Invalid input data"));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -52,7 +52,7 @@ const deleteItem = (req, res, next) => {
       if (err.name === "CastError") {
         return next(new BadRequestError("Invalid clothing item ID"));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -72,7 +72,7 @@ const likeItem = (req, res, next) => {
       if (err.name === "CastError") {
         return next(new BadRequestError("Invalid clothing item ID"));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -92,7 +92,7 @@ const unlikeItem = (req, res, next) => {
       if (err.name === "CastError") {
         return next(new BadRequestError("Invalid clothing item ID"));
       }
-      next(err);
+      return next(err);
     });
 };
 

@@ -3,6 +3,9 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 const mainRouter = require("./routes/index");
+const { errors } = require("celebrate");
+const errorHandler = require("./middlewares/errorHandler");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -14,10 +17,15 @@ mongoose
   })
   .catch(console.error);
 
+app.use(requestLogger);
 app.use(express.json());
 app.use(cors());
 
 app.use("/", mainRouter);
+
+app.use(errorLogger);
+app.use(errors());
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

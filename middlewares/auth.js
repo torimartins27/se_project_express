@@ -23,7 +23,7 @@ const authMiddleware = (req, res, next) => {
     req.user = payload;
     return next();
   } catch (err) {
-    return next(new UnauthautorizedError("Authorization required"));
+    return next(new UnauthorizedError("Authorization required"));
   }
 };
 
