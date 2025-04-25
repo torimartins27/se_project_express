@@ -38,7 +38,7 @@ const deleteItem = (req, res, next) => {
 
   clothingItem
     .findById(itemId)
-    .orFail(new Error("Clothing item not found"))
+    .orFail(() => new NotFoundError("Clothing item not found"))
     .then((item) => {
       if (item.owner.toString() !== userId.toString()) {
         throw new ForbiddenError("You are not the owner of this item");
